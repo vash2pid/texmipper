@@ -34,6 +34,12 @@ Limitations
 The tool currently can only convert *.tga file.
 The person that created this tool have limited knowledge on image formats, image/texure editing.
 
+
+Special thanks to
+-----------------
+Wildenhaus for his work on https://github.com/Wildenhaus/LibSaber
+Space Marine 2 Modding Community
+
 Dependencies
 ------------
 This software makes use of the following:
