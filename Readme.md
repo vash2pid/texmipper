@@ -38,7 +38,7 @@ The person that created this tool have limited knowledge on image formats, image
 Special thanks to
 -----------------
 Wildenhaus for his work on https://github.com/Wildenhaus/LibSaber
-Space Marine 2 Modding Community
+and Space Marine 2 Modding Community
 
 Dependencies
 ------------
