@@ -1,4 +1,4 @@
-﻿Introduction
+Introduction
 ------------
 The tool can be used to convert Warhammer 40,0000 Space Marine 2 texture files, *.tga to *.pct_mip files.
 
@@ -14,7 +14,7 @@ mipMaps property on the resource file.
 
 During the conversion, it may take some time depending on the texture.
 
-*.pct_mip files are found on default_pct_<#>.pak
+*.pct_mip files are found on default_pct_<#>.pak.
 *.pct.resource files are found on resources.pak.
 Every *.pct_mip has a corresponding *.pct.resource file, this file is required for the tool to convert the *.tga file to *.pct_mip.
 
