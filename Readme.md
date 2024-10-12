@@ -27,7 +27,7 @@ Usage
 1. Run the executable texmipper.exe, 
 2. A Select file dialog prompt will open, select the texture file that you want to convert
    *.tga - will convert to *.pct_mip file(s) that is compatible with Space Marine 2
-3. A corresponding *.pct_mip.resource file must be in the same location as the selected texture file.
+3. A corresponding *.pct.resource file must be in the same location as the selected texture file.
    The *.pct_mip.resource file must have the same name as the selected texture file.
 4. The file is created in the same folder of the executable.
    If existing file with the same name as the output file, the existing one is backed up.
