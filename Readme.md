@@ -5,7 +5,7 @@ The tool can be used to convert Warhammer 40,0000 Space Marine 2 texture files, 
 The tool will require *.tga file and the corresponding *.pct.resource file.
 The *.pct.resource file is required to correctly convert the files.
 
-Converting from *.tga to *.pct_mip (mip) files, multiple *.pct_mip files are created depending on 
+When converting from *.tga to *.pct_mip (mip) files, multiple *.pct_mip files are created depending on 
 the nMipMap property on the resource file. The output filenames of the mips are taken from the
 mipMaps property on the resource file.
 
@@ -14,7 +14,9 @@ mipMaps property on the resource file.
 
 During the conversion, it may take some time depending on the texture.
 
-*.pct_mip files are found on default_pct_<#>.pak, *.pct.resource files are found on resources.pak.
+*.pct_mip files are found on default_pct_<#>.pak
+*.pct.resource files are found on resources.pak
+
 Every *.pct_mip has a corresponding *.pct.resource file, this file is required for the tool to convert the *.tga file to *.pct_mip.
 
 Requirements
@@ -24,19 +26,18 @@ Windows 10
  
 Usage
 -----
-1. Run the executable texmipper.exe, 
-2. A Select file dialog prompt will open, select the texture file that you want to convert
+1. Run the executable texmipper.exe.
+2. A multi select file dialog prompt will open, select the texture files that you want to convert.
    *.tga - will convert to *.pct_mip file(s) that is compatible with Space Marine 2
-3. A corresponding *.pct.resource file must be in the same location as the selected texture file.
-   The *.pct_mip.resource file must have the same name as the selected texture file.
-4. The file is created in the same folder of the executable.
-   If existing file with the same name as the output file, the existing one is backed up.
+3. A corresponding *.pct.resource file must be in the same location per the selected texture file.
+   The *.pct_mip.resource file must have the same name as the texture file.
+4. The files are created in the same folder of the selected texture file.
+   If existing filse with the same name as the output files, the existing ones are backed up.
 
 Limitations
 -----------
 The tool currently can only convert *.tga file.
 The person that created this tool have limited knowledge on image formats, image/texure editing.
-
 
 Special thanks to
 -----------------
@@ -46,6 +47,8 @@ and Space Marine 2 Modding Community
 Dependencies
 ------------
 This software makes use of the following:
+
+Copyright (c) 2010-2014 SharpDX - Alexandre Mutel
 
 New DirectXTexNet
 Copyright (c) 2024 Dennis Gocke
@@ -76,4 +79,3 @@ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIG
 HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-

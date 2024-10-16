@@ -3,91 +3,148 @@ using YamlDotNet.Serialization;
 using System.Diagnostics;
 using DirectXTexNet;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using System.IO;
-using System.IO.Pipes;
+using System.Runtime.CompilerServices;
+using SharpDX.Direct3D;
+using SharpDX.Direct3D11;
+using System;
+using Windows.Devices.Portable;
+using System.Reflection;
 
 namespace texmipper
 {
     internal class TexMipper
     {
+
         [STAThread]
         static void Main(string[] args)
         {
-            string texturefilepath = "";
-            
+            string[] texturefiles = Array.Empty<string>();
+
             var texturefiledialog = new OpenFileDialog
             {
-                Multiselect = false,
-                Title = "Select texture file to convert...",
-                Filter = "Texture File|*.tga"
+                Multiselect = true,
+                Title = "Select texture files to convert...",
+                Filter = "Texture File|*.tga;"
             };
             using (texturefiledialog)
             {
                 if (texturefiledialog.ShowDialog() == DialogResult.OK)
                 {
-                    texturefilepath = texturefiledialog.FileName;
+                    texturefiles = texturefiledialog.FileNames;
                 }
             }
 
-            Console.WriteLine("Texture file selected:\n" + texturefilepath);
-
-            var resourcefilepath = texturefilepath.Replace(".tga", ".pct.resource");
-
-            if (!File.Exists(resourcefilepath))
+            int ctr = 1;
+            foreach (var texturefilepath in texturefiles)
             {
-                Console.WriteLine("Resource file for selected file texture file not found in the same location." +
-                    "\nThe resource file must have the same name as the texture file.");
-                Console.WriteLine("\nPress any key to close this window...");
-                Console.ReadKey();
-                return;
+                Console.WriteLine("Processing file {0} of {1}", ctr, texturefiles.Length);
+                Console.WriteLine("Texture file selected:\n" + texturefilepath);
 
+                var resourcefilepath = texturefilepath.Replace(".tga", ".pct.resource");
+
+                if (!File.Exists(resourcefilepath))
+                {
+                    Console.WriteLine("Resource file for selected file texture file not found in the same location." +
+                        "\nThe resource file must have the same name as the texture file.\n\n");
+
+                }
+                else
+                {
+                    Console.WriteLine("\nResrouce file selected:\n" + resourcefilepath);
+
+                    ResourcePct resourcePCT = Deserializer(resourcefilepath);
+
+                    ConvertToPCT(resourcePCT, texturefilepath);
+
+                    Console.WriteLine("\n\nProcessing of {0} completed", texturefilepath);
+                }
+
+                ctr++;
             }
 
-            Console.WriteLine("\nResrouce file selected:\n" + resourcefilepath);
+            if (texturefiles.Length == 0) { Console.WriteLine("\n\nNo files are selected"); }
 
-            Console.WriteLine("Converting from *.tga to *.pct_mip files based on the number of mipmaps in resource file" );
-
-            ResourcePct resourcePCT = Deserializer(resourcefilepath);
-
-            ConvertToPCT(resourcePCT, texturefilepath);
-
-            Console.WriteLine("\nPress any key to close this window...");
+            Console.WriteLine("\n\nPress any key to close this window...");
             Console.ReadKey();
         }
-
         private static void ConvertToPCT(ResourcePct resourcePCT, String inputtexturefilepath)
         {
+            Console.WriteLine("Converting from *.tga to *.pct_mip files based on the number of mipmaps in resource file\n\n");
+
             int counter = 1;
             int cursizex = resourcePCT.header.sx;
             int cursizey = resourcePCT.header.sy;
 
-            foreach (String mip in resourcePCT.mipMaps)
+            try
             {
-                Console.WriteLine("\nConverting " + mip);
-                    if (File.Exists(mip))
-                        File.Move(mip, mip + "." + DateTime.Now.ToString("yyyyMMddHHmmssffff"));
-                try
+
+                SharpDX.DXGI.Factory f = new SharpDX.DXGI.Factory1();
+                Device device = null;
+
+                for (int index = 0; index < f.GetAdapterCount(); index++)
                 {
+                    SharpDX.DXGI.Adapter a = f.GetAdapter(index);
+
+                    if (a.Description.DeviceId == 140) continue;
+
+                    FeatureLevel[] levels = new FeatureLevel[]
+                    {
+                        FeatureLevel.Level_11_1,
+                        FeatureLevel.Level_11_0,
+                        FeatureLevel.Level_10_1,
+                        FeatureLevel.Level_10_0,
+                        FeatureLevel.Level_9_1
+                     };
+
+                    DeviceCreationFlags flags = DeviceCreationFlags.BgraSupport;
+
+                    device = new Device(a, flags, levels);
+
+                    if (device.FeatureLevel >= FeatureLevel.Level_10_0)
+                    {
+                        break;
+                    }
+                }
+
+                if (device != null && device.FeatureLevel < FeatureLevel.Level_10_0)
+                {
+                    Console.WriteLine("No device compatible for GPU compute found");
+                    Console.WriteLine("Using software conversion instead with multitreading support");
+                    Console.WriteLine("CPU usage will be high and converstion time may take longer to complete");
+                }
+
+                foreach (String mip in resourcePCT.mipMaps)
+                {
+                    Console.WriteLine("\nConverting " + mip);
+                    if (File.Exists(Path.GetDirectoryName(inputtexturefilepath) + "\\" + mip))
+                        File.Move(Path.GetDirectoryName(inputtexturefilepath) + "\\" + mip
+                            , Path.GetDirectoryName(inputtexturefilepath) + "\\" + mip + "." + DateTime.Now.ToString("yyyyMMddHHmmssffff"));
+
                     if (counter > 1)
                     {
                         cursizex = cursizex / 2;
                         cursizey = cursizey / 2;
                     }
 
+                    var ddsimage = TexHelper.Instance.Initialize2D(GetDXGIFormat(resourcePCT.TextureFormat), cursizex, cursizey, 1, 1, CP_FLAGS.NONE);
+
                     using var tgaimage = TexHelper.Instance.LoadFromTGAFile(inputtexturefilepath);
-                    using var resizedimage = tgaimage.Resize(0, cursizex, cursizey, TEX_FILTER_FLAGS.LINEAR);
-                    using var compressed = resizedimage.Compress(GetDXGIFormat(resourcePCT.TextureFormat), TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
-
-                    using var ddsimage = TexHelper.Instance.Initialize2D(GetDXGIFormat(resourcePCT.TextureFormat), cursizex, cursizey, 1, 1, CP_FLAGS.NONE);
-
-                    var srcData = compressed.GetPixels();
+                    using var resizedimage = tgaimage.Resize(cursizex, cursizey, TEX_FILTER_FLAGS.DEFAULT);
+                    if (device != null && device.FeatureLevel >= FeatureLevel.Level_10_0)
+                    {
+                        ddsimage = resizedimage.Compress(device.NativePointer, GetDXGIFormat(resourcePCT.TextureFormat), TEX_COMPRESS_FLAGS.DEFAULT, 1.0f);
+                    }
+                    else
+                    {
+                        ddsimage = resizedimage.Compress(GetDXGIFormat(resourcePCT.TextureFormat), TEX_COMPRESS_FLAGS.PARALLEL, 0.50f);
+                    }
+                    var srcData = ddsimage.GetPixels();
                     var destData = ddsimage.GetPixels();
 
-                    if (ddsimage.GetPixelsSize() < compressed.GetPixelsSize()) throw new Exception("Source data will not fit");
+                    if (ddsimage.GetPixelsSize() < ddsimage.GetPixelsSize()) throw new Exception("Source data will not fit");
 
-                    using var ddsstream = compressed.SaveToDDSMemory(DDS_FLAGS.NONE);
-                    using var outputstream = File.Create(mip);
+                    using var ddsstream = ddsimage.SaveToDDSMemory(DDS_FLAGS.NONE);
+                    using var outputstream = File.Create(Path.GetDirectoryName(inputtexturefilepath) + "\\" + mip);
                     using var memstream = new MemoryStream();
                     ddsstream.CopyTo(memstream);
                     long ddsoffset = GetDDSHeaderOffset(memstream);
@@ -99,12 +156,12 @@ namespace texmipper
 
                     FileCheckResultMip(resourcePCT, mip, counter);
                     Console.WriteLine("\n" + Path.GetFileName(inputtexturefilepath) + " converted to " + mip);
-                } 
-                catch(Exception ex)
-                {
-                    Console.WriteLine(ex);
+                    counter++;
                 }
-                counter++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
 
@@ -134,8 +191,8 @@ namespace texmipper
             uint caps2 = binaryStream.ReadUInt32();
             uint caps3 = binaryStream.ReadUInt32();
             uint caps4 = binaryStream.ReadUInt32();
-            uint reserved2  = binaryStream.ReadUInt32();
-            
+            uint reserved2 = binaryStream.ReadUInt32();
+
             if (new string(fourCC).Equals("DX10"))
             {
                 uint dxgiformat = binaryStream.ReadUInt32();
@@ -146,7 +203,6 @@ namespace texmipper
             }
             return binaryStream.BaseStream.Position;
         }
-
         private static DXGI_FORMAT GetDXGIFormat(SM2TextureFormat format)
         {
             switch (format)
@@ -187,7 +243,8 @@ namespace texmipper
 
         private static void FileCheckResultMip(ResourcePct resourcePCT, string mipname, int counter)
         {
-            if(File.Exists(mipname)) {
+            if (File.Exists(mipname))
+            {
                 byte[] file = File.ReadAllBytes(mipname);
                 long expectedSize = resourcePCT.header.mipLevel[counter - 1].size;
 
@@ -213,3 +270,4 @@ namespace texmipper
         }
     }
 }
+
