@@ -1,14 +1,8 @@
 ﻿
 using YamlDotNet.Serialization;
-using System.Diagnostics;
 using DirectXTexNet;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using System;
-using Windows.Devices.Portable;
-using System.Reflection;
 
 namespace texmipper
 {
