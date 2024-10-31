@@ -1,23 +1,29 @@
 Introduction
 ------------
 The tool can be used to convert Warhammer 40,0000 Space Marine 2 texture files, *.tga to *.pct_mip files.
+And *.pct_mip files to *.tga (Normal maps are not 'officially' supported when converting from *.pct_mip files to *.tga).
+The tool will convert the normal maps but it might not be in the format that you want or need.
 
-The tool will require *.tga file and the corresponding *.pct.resource file.
-The *.pct.resource file is required to correctly convert the files.
+The tool will require *.tga or *.pct_mip file and the game's resoure.pak file in the same folder.
+And the game's resoure.pak file is required to correctly convert the files.
+*resources.pak file is found if game is installed on steam on (steam game installation directory)\Space Marine 2\client_pc\root\paks\client\resources.pak
 
 When converting from *.tga to *.pct_mip (mip) files, multiple *.pct_mip files are created depending on 
-the nMipMap property on the resource file. The output filenames of the mips are taken from the
-mipMaps property on the resource file.
+the nMipMap property on the resource file, this is done automatically by the tool.
+The output filenames of the mips are taken from the mipMaps property on the resource file.
 
+When converting from *.pct_mip to *.tga file, you must use the highest quality mip. Usually the name has the suffix *_1.pct_mip.
+And you must remove the suffix in the file name.
+e.g. d_shldr_death_guard_02_1.pct_mip to d_shldr_death_guard_02.pct_mip
+
+This ensures you are converting the highest quality mip.
+*.pct_mip files are found on inside default_pct_<#>.pak in directory \Space Marine 2\client_pc\root\paks\client\default\
+
+*.pak files are just zip files, you can use 7zip or WinRar if you want to open one.
 *The *.tga file to convert from does not have to be created from this tool. Other tools can be used, or can be created from scratch.
-*The *.tga file must have the same dimensions stated in the sx, sy properies in the *.resource file.
-
-During the conversion, it may take some time depending on the texture.
-
-*.pct_mip files are found on default_pct_<#>.pak
-*.pct.resource files are found on resources.pak
-
-Every *.pct_mip has a corresponding *.pct.resource file, this file is required for the tool to convert the *.tga file to *.pct_mip.
+*The *.tga file must have the same dimensions stated in the sx, sy properies in the *.resource file. *.resource files are just text files that can be opened in text processor like notepad.
+*The *.resource file can be found inside (steam game installation directory)\Space Marine 2\client_pc\root\paks\client\resources.pak.
+*The latest version of the tool does not need to have *.resource in the same folder but if you need to know the dimensions when creating from scrath you can refer to the *.resource.
 
 Requirements
 ------------
@@ -27,16 +33,20 @@ Windows 10
 Usage
 -----
 1. Run the executable texmipper.exe.
+
 2. A multi select file dialog prompt will open, select the texture files that you want to convert.
    *.tga - will convert to *.pct_mip file(s) that is compatible with Space Marine 2
-3. A corresponding *.pct.resource file must be in the same location per the selected texture file.
-   The *.pct_mip.resource file must have the same name as the texture file.
-4. The files are created in the same folder of the selected texture file.
-   If existing filse with the same name as the output files, the existing ones are backed up.
+   *.pct_mip - will convert to *.tga (Normal maps are not 'officially' supported when converting from *.pct_mip files to *.tga).
+
+3. The game's resource.pak file must be in the same folder.
+
+4. The files are created in the same folder of the selected file.
+   Existing ones are backed up when converting.
 
 Limitations
 -----------
-The tool currently can only convert *.tga file.
+The tool currently can only convert from *.tga file to *.pct_mip.
+Normal maps are not 'officially' supported when converting from *.pct_mip to *.tga. The tool will convert it bt it might not be in the format that you want or need.
 The person that created this tool have limited knowledge on image formats, image/texure editing.
 
 Special thanks to
